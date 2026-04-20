@@ -6,7 +6,7 @@ fullstack (Next.js App Router + BFF)
 
 ## 기술 스택
 
-- 언어·프레임워크: TypeScript / Next.js 15 App Router
+- 언어·프레임워크: TypeScript / Next.js 16 App Router
 - 패키지 매니저: pnpm
 - 단위 테스트: Vitest + React Testing Library
 - E2E: Playwright
@@ -19,7 +19,7 @@ fullstack (Next.js App Router + BFF)
   - 브라우저 → BFF(Route Handler) → 외부 백엔드 API
   - 백엔드 URL은 서버 환경변수만 사용 — `NEXT_PUBLIC_*` 노출 금지
 - 상태 관리: TanStack Query (서버 상태) + Zustand (클라이언트 상태)
-- 테스트 폴더: `src/**/*.test.ts(x)` (유닛), `e2e/**/*.spec.ts` (E2E)
+- 테스트 폴더: `tests/unit/` (`src/` 트리 미러링, 유닛), `e2e/` (E2E)
 
 ## 폴더 구조
 

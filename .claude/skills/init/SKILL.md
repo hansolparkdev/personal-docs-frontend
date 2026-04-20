@@ -74,7 +74,7 @@ description: 프로젝트 초기화. 소스 분석 또는 인터뷰로 CLAUDE.md
 ```
 
 **질문 3 — 타입별 추가 질문:**
-- 프론트 포함(1/3/4): `E2E (Playwright/없음):` + `UI 라이브러리 (Tailwind/shadcn/MUI/없음):`
+- 프론트 포함(1/3/4): `E2E (Playwright/없음):` + `UI 라이브러리 (Tailwind/shadcn/MUI/없음):` + `단위 테스트 위치 (tests/unit/ 미러링 권장):` + `E2E 폴더 (e2e/ 권장):`
 - 백엔드 포함(2/3/4): `DB (PostgreSQL/SQLite/없음):`
 - 모노레포(4): `apps/ 목록:` + `packages/ 목록:`
 
@@ -104,7 +104,8 @@ description: 프로젝트 초기화. 소스 분석 또는 인터뷰로 CLAUDE.md
 
 ## 아키텍처
 
-- 테스트 폴더: {위치}
+- 단위 테스트 폴더: {프론트 계열: `tests/unit/` (`src/` 트리 미러링) | 백엔드 계열: 감지값}
+- E2E 폴더: {프론트 계열: `e2e/` | 해당 없으면 생략}
 
 ## 개발 서버
 

@@ -29,10 +29,11 @@ tasks.md 읽고 체크박스 상태 확인:
 - `docs/specs/changes/<feature>/specs/` 하위 **모든 capability의 spec.md**를 읽어 SCENARIOS로 병합 (capability 폴더 알파벳순)
 - CLAUDE.md에서 STACK 추출
 - `docs/plans/<feature>/plan.md` 존재 시 UX_POINTS 추출 (frontend만. Mode 2/3은 plan 없을 수 있음 — 없으면 UX_POINTS 빈값)
+- `docs/plans/<feature>/plan.md` `## Meta`의 `design-ref` 필드 추출 → `DESIGN_REF` (없으면 빈값)
 
 ## Step 2: 개발 에이전트 호출
 
-전달: FEATURE, PACKAGE, TYPE, STACK, UX_POINTS, SCENARIOS, TASKS_PATH
+전달: FEATURE, PACKAGE, TYPE, STACK, UX_POINTS, SCENARIOS, TASKS_PATH, DESIGN_REF
 
 tasks.md 순서대로 TDD 진행. spec 시나리오는 단위/RTL 테스트 검증 기준.
 

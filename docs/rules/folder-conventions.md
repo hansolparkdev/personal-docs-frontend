@@ -39,6 +39,13 @@ apps/admin/src/
 - `page.tsx`, `layout.tsx`: default export
 - 그 외 모든 파일: named export
 
+## 테스트 위치
+
+- 단위 테스트: `tests/unit/` — `src/` 트리를 그대로 미러링
+  - 예: `src/features/auth/components/LoginCard.tsx` → `tests/unit/features/auth/components/LoginCard.test.tsx`
+- E2E: `e2e/` (루트)
+- `src/` 하위에 테스트 파일 배치 금지
+
 ## 규칙
 
 - `app/` 하위에는 라우팅 파일만

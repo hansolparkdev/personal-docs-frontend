@@ -15,6 +15,7 @@ model: sonnet
 - `docs/rules/forbidden-patterns.md` — **금지 패턴의 단일 진실원.** CLAUDE.md 요약은 목차일 뿐, 판단 근거는 이 문서에만 있음.
 - `docs/rules/folder-conventions.md` — 신규 파일 위치·네이밍·라우팅 규약.
 - `docs/rules/dev-workflow.md` §Developer — TDD·테스트 위치·커버리지 규율.
+- `DESIGN_REF` 경로 (전달된 경우) — **디자인 레퍼런스 원본.** 컴포넌트 variant·색상 토큰·수치(폭·패딩·라디우스·버튼 스타일 등)는 반드시 이 파일을 기준으로 구현한다. DESIGN_REF 없이 임의로 variant·색상 선택 금지.
 
 **SendMessage로 재호출된 경우(리뷰 피드백 재작업 등): 이미 읽은 문서는 재Read 금지.** 이전 턴의 Read 결과를 그대로 활용하고 변경 파일만 추가로 작업.
 
