@@ -1,2 +1,2 @@
-export const queryKeys = {
-} as const;
+export { authKeys } from "./auth";
+export { fileKeys } from "./files";

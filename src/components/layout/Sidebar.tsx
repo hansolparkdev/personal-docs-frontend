@@ -5,6 +5,8 @@ import { FileText, MessageSquare, LogOut, PenSquare } from "lucide-react";
 import { WordMark } from "./WordMark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMeQuery, useLogoutMutation } from "@/features/auth/queries";
 
 interface RecentChat {
   id: string;
@@ -15,17 +17,16 @@ interface SidebarProps {
   recentChats?: RecentChat[];
 }
 
-const MOCK_USER = {
-  name: "박한솔",
-  email: "park@example.com",
-};
-
 export function Sidebar({ recentChats }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: user, isLoading } = useMeQuery();
+  const logoutMutation = useLogoutMutation();
 
   const isDocsActive = pathname === "/docs" || pathname.startsWith("/docs/");
   const isChatActive = pathname === "/chat" || pathname.startsWith("/chat/");
+
+  const avatarInitial = user?.name ? user.name.charAt(0) : user?.username?.charAt(0) ?? "?";
 
   return (
     <aside className="w-[260px] shrink-0 flex flex-col h-screen bg-[var(--sidebar)] border-r border-[var(--sidebar-border)]">
@@ -102,17 +103,33 @@ export function Sidebar({ recentChats }: SidebarProps) {
 
       {/* 유저 푸터 */}
       <div className="px-3 py-3 border-t border-[var(--sidebar-border)] flex items-center gap-2">
-        <Avatar size="sm">
-          <AvatarFallback>박</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{MOCK_USER.name}</p>
-          <p className="text-xs text-[var(--fg-3)] truncate">{MOCK_USER.email}</p>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center gap-2 flex-1 animate-pulse">
+            <Skeleton className="size-7 rounded-full" />
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-2 w-24" />
+            </div>
+          </div>
+        ) : user ? (
+          <>
+            <Avatar size="sm">
+              <AvatarFallback>{avatarInitial}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user.name ?? user.username}</p>
+              <p className="text-xs text-[var(--fg-3)] truncate">{user.email}</p>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-[var(--fg-3)]">사용자 정보를 불러올 수 없습니다</p>
+          </div>
+        )}
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={() => router.push("/login")}
+          onClick={() => logoutMutation.mutate()}
           aria-label="로그아웃"
         >
           <LogOut className="size-4" />

@@ -1,6 +1,5 @@
 import { Dropzone } from "@/features/docs/components/Dropzone";
 import { DocList } from "@/features/docs/components/DocList";
-import { MOCK_DOCS } from "@/features/docs/mock-data";
 
 export default function DocsPage() {
   return (
@@ -14,7 +13,7 @@ export default function DocsPage() {
 
       <Dropzone />
 
-      <DocList initialDocs={MOCK_DOCS} />
+      <DocList />
     </div>
   );
 }

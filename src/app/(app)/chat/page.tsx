@@ -54,6 +54,9 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      <div className="px-6 py-2 bg-muted/50 border-b border-border text-xs text-[var(--fg-3)] text-center">
+        챗 기능은 준비 중이에요. 현재는 목업 응답으로 동작합니다.
+      </div>
       <div className="flex-1 overflow-y-auto min-h-0">
         <MessageList
           messages={messages}

@@ -1,16 +1,59 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const AUTH_TOKEN_PATHS = ["/auth/login", "/auth/refresh"];
+const AUTH_LOGOUT_PATH = "/auth/logout";
+const AUTH_REFRESH_PATH = "/auth/refresh";
+
+function isTokenPath(path: string): boolean {
+  return AUTH_TOKEN_PATHS.some((p) => path === p);
+}
+
+function isLogoutPath(path: string): boolean {
+  return path === AUTH_LOGOUT_PATH;
+}
+
+function setCookieHeader(name: string, value: string, maxAge: number): string {
+  return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+}
 
 async function proxy(req: NextRequest): Promise<NextResponse> {
+  const backendUrl = process.env.BACKEND_URL;
   const path = req.nextUrl.pathname.replace("/api", "");
   const search = req.nextUrl.search;
-  const url = `${BACKEND_URL}${path}${search}`;
+
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("access_token")?.value;
+
+  // 로그아웃: 백엔드 호출 없이 BFF에서 쿠키만 삭제
+  if (isLogoutPath(path)) {
+    const res = new NextResponse(null, { status: 200 });
+    res.cookies.set("access_token", "", { maxAge: 0, path: "/" });
+    res.cookies.set("refresh_token", "", { maxAge: 0, path: "/" });
+    return res;
+  }
+
+  const url = `${backendUrl}${path}${search}`;
 
   const headers = new Headers(req.headers);
   headers.delete("host");
+  headers.delete("cookie");
 
-  const body = req.method !== "GET" && req.method !== "HEAD" ? await req.arrayBuffer() : undefined;
+  // access_token 쿠키 → Authorization 헤더로 변환
+  if (accessToken) {
+    headers.set("authorization", `Bearer ${accessToken}`);
+  }
+
+  let body: BodyInit | undefined;
+
+  // refresh 요청: 쿠키의 refresh_token을 body에 주입
+  if (path === AUTH_REFRESH_PATH && req.method === "POST") {
+    const refreshToken = cookieStore.get("refresh_token")?.value;
+    body = JSON.stringify({ refresh_token: refreshToken ?? "" });
+    headers.set("content-type", "application/json");
+  } else if (req.method !== "GET" && req.method !== "HEAD") {
+    body = await req.arrayBuffer();
+  }
 
   const res = await fetch(url, {
     method: req.method,
@@ -19,6 +62,30 @@ async function proxy(req: NextRequest): Promise<NextResponse> {
   });
 
   const resHeaders = new Headers(res.headers);
+
+  // 로그인/refresh: 토큰을 HttpOnly 쿠키로 변환, body에서 토큰 제거
+  if (isTokenPath(path) && res.ok) {
+    const data = await res.json() as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+
+    if (data.access_token) {
+      const maxAge = data.expires_in ?? 300;
+      resHeaders.append("set-cookie", setCookieHeader("access_token", data.access_token, maxAge));
+    }
+    if (data.refresh_token) {
+      resHeaders.append("set-cookie", setCookieHeader("refresh_token", data.refresh_token, 60 * 60 * 24 * 30));
+    }
+
+    // body에서 토큰 제거 — 클라이언트에 토큰 노출 금지
+    return new NextResponse(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: resHeaders,
+    });
+  }
+
   return new NextResponse(res.body, {
     status: res.status,
     headers: resHeaders,

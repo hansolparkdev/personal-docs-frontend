@@ -2,26 +2,75 @@ const BFF_BASE = "/api";
 
 type RequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+const REFRESH_PATH = "/auth/refresh";
+
+async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+  isRetry = false
+): Promise<T> {
   const { body, ...rest } = options;
+
+  const isMultipart = body instanceof FormData;
+
+  const headers: Record<string, string> = {};
+  if (!isMultipart) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (rest.headers) {
+    const incoming = rest.headers as Record<string, string>;
+    Object.assign(headers, incoming);
+  }
+
   const res = await fetch(`${BFF_BASE}${path}`, {
     ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...rest.headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: "include",
+    headers,
+    body: isMultipart ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
+  if (res.status === 401 && !isRetry && path !== REFRESH_PATH) {
+    // refresh 시도
+    const refreshRes = await fetch(`${BFF_BASE}${REFRESH_PATH}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!refreshRes.ok) {
+      // refresh 실패 → 로그인 페이지로
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      throw new Error("[api] refresh failed, redirecting to login");
+    }
+
+    // 원래 요청 재시도
+    return request<T>(path, options, true);
+  }
+
   if (!res.ok) {
-    throw new Error(`[api] ${res.status} ${res.statusText}`);
+    const errorBody = await res.json().catch(() => ({}));
+    const error = new Error(`[api] ${res.status} ${res.statusText}`) as Error & {
+      status: number;
+      body: unknown;
+    };
+    error.status = res.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  // 204 No Content
+  if (res.status === 204) {
+    return undefined as unknown as T;
   }
 
   return res.json() as Promise<T>;
 }
 
 export const api = {
-  get: <T>(path: string, init?: RequestOptions) => request<T>(path, { method: "GET", ...init }),
+  get: <T>(path: string, init?: RequestOptions) =>
+    request<T>(path, { method: "GET", ...init }),
   post: <T>(path: string, body: unknown, init?: RequestOptions) =>
     request<T>(path, { method: "POST", body, ...init }),
   put: <T>(path: string, body: unknown, init?: RequestOptions) =>

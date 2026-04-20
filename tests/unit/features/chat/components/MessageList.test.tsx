@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MessageList } from "@/features/chat/components/MessageList";
-import type { Message } from "../types";
+import type { Message } from "@/features/chat/types";
 
 const SEED_MESSAGES: Message[] = [
   {
