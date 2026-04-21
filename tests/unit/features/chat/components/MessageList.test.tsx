@@ -2,22 +2,27 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MessageList } from "@/features/chat/components/MessageList";
-import type { Message } from "@/features/chat/types";
+import type { ChatMessage } from "@/features/chat/types";
 
-const SEED_MESSAGES: Message[] = [
+const SEED_MESSAGES: ChatMessage[] = [
   {
     id: "1",
+    session_id: "s1",
     role: "user",
-    text: "프로젝트 기획서의 핵심 목표가 무엇인가요?",
+    content: "프로젝트 기획서의 핵심 목표가 무엇인가요?",
+    sources: null,
+    created_at: "2024-01-01T00:00:00Z",
   },
   {
     id: "2",
-    role: "ai",
-    text: "AI 응답 텍스트입니다.",
+    session_id: "s1",
+    role: "assistant",
+    content: "AI 응답 텍스트입니다.",
     sources: [
-      { doc: "프로젝트 기획서", loc: "p.3" },
-      { doc: "API 설계 문서", loc: "p.1" },
+      { file_id: "f1", filename: "프로젝트 기획서.pdf", page_number: 3 },
+      { file_id: "f2", filename: "API 설계 문서.pdf", page_number: 1 },
     ],
+    created_at: "2024-01-01T00:00:01Z",
   },
 ];
 
@@ -30,8 +35,8 @@ describe("MessageList", () => {
 
   it("AI 버블에 출처 칩 2개를 렌더링한다", () => {
     render(<MessageList messages={SEED_MESSAGES} />);
-    expect(screen.getByText("프로젝트 기획서 · p.3")).toBeInTheDocument();
-    expect(screen.getByText("API 설계 문서 · p.1")).toBeInTheDocument();
+    expect(screen.getByText("프로젝트 기획서.pdf · p.3")).toBeInTheDocument();
+    expect(screen.getByText("API 설계 문서.pdf · p.1")).toBeInTheDocument();
   });
 
   it("빈 messages 배열 시 빈 상태 문구를 표시한다", () => {
@@ -54,8 +59,38 @@ describe("MessageList", () => {
     expect(onExampleQuestion).toHaveBeenCalled();
   });
 
-  it("isPending=true 일 때 로딩 문구를 표시한다", () => {
-    render(<MessageList messages={SEED_MESSAGES} isPending />);
-    expect(screen.getByText("AI가 응답 중이에요...")).toBeInTheDocument();
+  it("isStreaming=true 일 때 스트리밍 버블을 표시한다", () => {
+    render(
+      <MessageList
+        messages={SEED_MESSAGES}
+        isStreaming
+        streamingText="스트리밍 중..."
+      />
+    );
+    expect(screen.getByText("스트리밍 중...")).toBeInTheDocument();
+  });
+
+  it("isStreaming=false 이면 스트리밍 버블이 없다", () => {
+    render(
+      <MessageList
+        messages={SEED_MESSAGES}
+        isStreaming={false}
+        streamingText="텍스트"
+      />
+    );
+    expect(screen.queryByText("텍스트")).not.toBeInTheDocument();
+  });
+
+  it("sources가 있으면 isStreaming 버블 하단에 출처 칩을 표시한다", () => {
+    const sources = [{ file_id: "f1", filename: "source.pdf", page_number: 5 }];
+    render(
+      <MessageList
+        messages={SEED_MESSAGES}
+        isStreaming
+        streamingText="응답 중"
+        streamingSources={sources}
+      />
+    );
+    expect(screen.getByText("source.pdf · p.5")).toBeInTheDocument();
   });
 });

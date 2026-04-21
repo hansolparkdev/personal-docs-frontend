@@ -1,32 +1,32 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { FileText, MessageSquare, LogOut, PenSquare } from "lucide-react";
+import { FileText, LogOut, PenSquare, X } from "lucide-react";
 import { WordMark } from "./WordMark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMeQuery, useLogoutMutation } from "@/features/auth/queries";
+import { useSessionsQuery, useCreateSessionMutation, useDeleteSessionMutation } from "@/features/chat/queries";
 
-interface RecentChat {
-  id: string;
-  title: string;
-}
-
-interface SidebarProps {
-  recentChats?: RecentChat[];
-}
-
-export function Sidebar({ recentChats }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user, isLoading } = useMeQuery();
   const logoutMutation = useLogoutMutation();
+  const { data: sessions } = useSessionsQuery();
+  const createSessionMutation = useCreateSessionMutation();
+  const deleteSessionMutation = useDeleteSessionMutation();
 
   const isDocsActive = pathname === "/docs" || pathname.startsWith("/docs/");
   const isChatActive = pathname === "/chat" || pathname.startsWith("/chat/");
 
   const avatarInitial = user?.name ? user.name.charAt(0) : user?.username?.charAt(0) ?? "?";
+
+  async function handleNewChat() {
+    const session = await createSessionMutation.mutateAsync();
+    window.location.href = `/chat?session=${session.id}`;
+  }
 
   return (
     <aside className="w-[260px] shrink-0 flex flex-col h-screen bg-[var(--sidebar)] border-r border-[var(--sidebar-border)]">
@@ -40,7 +40,8 @@ export function Sidebar({ recentChats }: SidebarProps) {
         <Button
           variant="default"
           className="w-full justify-start gap-2 rounded-lg"
-          onClick={() => router.push("/chat")}
+          onClick={handleNewChat}
+          disabled={createSessionMutation.isPending}
         >
           <PenSquare className="size-4" />
           새 챗 시작
@@ -48,7 +49,7 @@ export function Sidebar({ recentChats }: SidebarProps) {
       </div>
 
       {/* 내비게이션 */}
-      <nav className="px-3 py-2 space-y-1">
+      <nav className="px-3 pb-2 space-y-1 border-b border-[var(--sidebar-border)]">
         <button
           type="button"
           onClick={() => router.push("/docs")}
@@ -61,39 +62,36 @@ export function Sidebar({ recentChats }: SidebarProps) {
           <FileText className="size-4 shrink-0" />
           내 문서
         </button>
-        <button
-          type="button"
-          onClick={() => router.push("/chat")}
-          className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-            isChatActive
-              ? "bg-accent text-accent-foreground"
-              : "text-[var(--fg-2)] hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <MessageSquare className="size-4 shrink-0" />
-          챗
-        </button>
       </nav>
 
       {/* 최근 대화 섹션 */}
-      <div className="px-3 py-2 flex-1 overflow-auto min-h-0">
-        <p className="text-xs font-medium text-[var(--fg-3)] px-3 py-1 mb-1">
+      <div className="flex-1 overflow-auto min-h-0 py-3">
+        <p className="text-xs font-semibold text-[var(--fg-3)] uppercase tracking-wider px-4 mb-2">
           최근 대화
         </p>
-        {!recentChats || recentChats.length === 0 ? (
-          <p className="text-xs text-[var(--fg-3)] px-3 py-2">
+        {!sessions || sessions.length === 0 ? (
+          <p className="text-xs text-[var(--fg-3)] px-4 py-1">
             아직 대화 기록이 없어요
           </p>
         ) : (
-          <ul className="space-y-0.5">
-            {recentChats.map((chat) => (
-              <li key={chat.id}>
+          <ul className="space-y-0.5 px-2">
+            {sessions.map((session) => (
+              <li key={session.id} className="group flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => router.push(`/chat?id=${chat.id}`)}
-                  className="w-full text-left text-sm text-[var(--fg-2)] hover:bg-muted hover:text-foreground px-3 py-1.5 rounded-lg truncate transition-colors cursor-pointer"
+                  onClick={() => router.push(`/chat?session=${session.id}`)}
+                  className="flex-1 min-w-0 text-left text-sm text-[var(--fg-2)] hover:bg-muted hover:text-foreground px-2 py-1.5 rounded-lg truncate transition-colors cursor-pointer"
                 >
-                  {chat.title}
+                  {session.title ?? "새 대화"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteSessionMutation.mutate(session.id)}
+                  disabled={deleteSessionMutation.isPending}
+                  aria-label="대화 삭제"
+                  className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded-md text-[var(--fg-3)] hover:text-foreground hover:bg-muted transition-all cursor-pointer"
+                >
+                  <X className="size-3.5" />
                 </button>
               </li>
             ))}

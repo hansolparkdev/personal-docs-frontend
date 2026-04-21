@@ -10,6 +10,19 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["tests/unit/**/*.test.{ts,tsx}"],
     exclude: ["e2e/**", "node_modules/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.d.ts",
+        "src/test/**",
+        "src/app/**/page.tsx",
+        "src/app/**/layout.tsx",
+        "src/app/**/route.ts",
+        "src/components/ui/**",
+      ],
+    },
   },
   resolve: {
     alias: {

@@ -1,8 +1,8 @@
 "use client";
 
 import { MessageSquare } from "lucide-react";
-import { MessageBubble } from "./MessageBubble";
-import type { Message } from "../types";
+import { Badge } from "@/components/ui/badge";
+import type { ChatMessage, Source } from "../types";
 
 const EXAMPLE_QUESTIONS = [
   "프로젝트 기획서의 핵심 목표가 무엇인가요?",
@@ -11,13 +11,21 @@ const EXAMPLE_QUESTIONS = [
 ];
 
 interface MessageListProps {
-  messages: Message[];
+  messages: ChatMessage[];
   onExampleQuestion?: (question: string) => void;
-  isPending?: boolean;
+  isStreaming?: boolean;
+  streamingText?: string;
+  streamingSources?: Source[];
 }
 
-export function MessageList({ messages, onExampleQuestion, isPending }: MessageListProps) {
-  if (messages.length === 0) {
+export function MessageList({
+  messages,
+  onExampleQuestion,
+  isStreaming,
+  streamingText,
+  streamingSources,
+}: MessageListProps) {
+  if (messages.length === 0 && !isStreaming) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-6 py-16 text-center">
         <MessageSquare className="size-12 text-[var(--fg-4)]" />
@@ -46,13 +54,70 @@ export function MessageList({ messages, onExampleQuestion, isPending }: MessageL
   return (
     <div className="flex flex-col gap-4 py-4 px-4">
       {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+        <ChatMessageBubble key={message.id} message={message} />
       ))}
-      {isPending && (
-        <div className="flex gap-2 items-center text-sm text-[var(--fg-3)] px-2">
-          <span className="animate-pulse">AI가 응답 중이에요...</span>
+      {isStreaming && (
+        <div className="flex justify-start">
+          <div className="max-w-[70%] space-y-2 bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-2.5">
+            {streamingText ? (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                {streamingText}
+              </p>
+            ) : (
+              <span className="text-sm text-[var(--fg-3)] animate-pulse">
+                AI가 응답 중이에요...
+              </span>
+            )}
+            {streamingSources && streamingSources.filter(s => s.filename).length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {streamingSources.filter(s => s.filename).map((source, index) => (
+                  <Badge
+                    key={`${source.file_id}-${index}`}
+                    variant="outline"
+                    className="rounded-full text-xs font-normal"
+                  >
+                    {source.filename}{source.page_number != null ? ` · p.${source.page_number}` : ""}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ChatMessageBubble({ message }: { message: ChatMessage }) {
+  const isUser = message.role === "user";
+
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[70%] space-y-2 ${
+          isUser
+            ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm px-4 py-2.5"
+            : "bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-2.5"
+        }`}
+      >
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+          {message.content}
+        </p>
+
+        {!isUser && message.sources && message.sources.filter(s => s.filename).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {message.sources.filter(s => s.filename).map((source, index) => (
+              <Badge
+                key={`${source.file_id}-${index}`}
+                variant="outline"
+                className="rounded-full text-xs font-normal"
+              >
+                {source.filename}{source.page_number != null ? ` · p.${source.page_number}` : ""}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

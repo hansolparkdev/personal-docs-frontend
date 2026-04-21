@@ -3,6 +3,8 @@ const BFF_BASE = "/api";
 type RequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
 const REFRESH_PATH = "/auth/refresh";
+// 인증 없이 호출하는 경로 — 401 시 refresh 시도 안 함
+const NO_RETRY_PATHS = ["/auth/login", "/auth/register", "/auth/refresh", "/auth/callback"];
 
 async function request<T>(
   path: string,
@@ -29,7 +31,7 @@ async function request<T>(
     body: isMultipart ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  if (res.status === 401 && !isRetry && path !== REFRESH_PATH) {
+  if (res.status === 401 && !isRetry && !NO_RETRY_PATHS.includes(path)) {
     // refresh 시도
     const refreshRes = await fetch(`${BFF_BASE}${REFRESH_PATH}`, {
       method: "POST",
@@ -38,11 +40,11 @@ async function request<T>(
     });
 
     if (!refreshRes.ok) {
-      // refresh 실패 → 로그인 페이지로
-      if (typeof window !== "undefined") {
+      // refresh 실패 → 이미 로그인 페이지면 redirect 안 함
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
-      throw new Error("[api] refresh failed, redirecting to login");
+      throw new Error("[api] refresh failed");
     }
 
     // 원래 요청 재시도

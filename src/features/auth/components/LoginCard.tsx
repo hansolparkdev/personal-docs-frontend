@@ -60,7 +60,10 @@ export function LoginCard() {
   }
 
   const loginError = getLoginErrorMessage(loginMutation.error as (Error & { status?: number }) | null);
-  const registerError = getRegisterErrorMessage(registerMutation.error as (Error & { status?: number }) | null);
+  // isSuccess 시 에러 숨김 — 성공 후 redirect 중에 다른 쿼리 에러가 올라오는 것 방지
+  const registerError = registerMutation.isSuccess
+    ? null
+    : getRegisterErrorMessage(registerMutation.error as (Error & { status?: number }) | null);
 
   return (
     <div className="w-full max-w-[400px] rounded-xl border border-border bg-card p-8 shadow-none">

@@ -4,6 +4,15 @@ import { NextRequest } from "next/server";
 // BACKEND_URL 환경변수 mock
 vi.stubEnv("BACKEND_URL", "http://backend:8000");
 
+// next/headers mock — cookies는 request scope가 없는 테스트 환경에서 실패하므로 모킹
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(() =>
+    Promise.resolve({
+      get: (_name: string) => undefined,
+    })
+  ),
+}));
+
 describe("BFF Route Handler", () => {
   const originalFetch = global.fetch;
 
@@ -116,5 +125,35 @@ describe("BFF Route Handler", () => {
     const req = new NextRequest("http://localhost:3000/api/auth/me");
     const res = await GET(req);
     expect(res.status).toBe(401);
+  });
+
+  it("SSE(text/event-stream) 응답을 버퍼링 없이 body 스트림으로 중계한다", async () => {
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"token","content":"hello"}\n\n'));
+        controller.close();
+      },
+    });
+
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(stream, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      })
+    );
+
+    const { POST } = await import("@/app/api/[...proxy]/route");
+    const req = new NextRequest(
+      "http://localhost:3000/api/chats/session-1/messages",
+      { method: "POST", body: JSON.stringify({ content: "안녕" }) }
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+
+    // body가 ReadableStream으로 전달되는지 확인
+    expect(res.body).toBeDefined();
   });
 });

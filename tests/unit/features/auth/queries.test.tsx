@@ -16,6 +16,11 @@ vi.mock("@/features/auth/api", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("sonner", () => ({ toast: { success: vi.fn() } }));
+
+const locationMock = { href: "" };
+Object.defineProperty(window, "location", { value: locationMock, writable: true });
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -30,6 +35,7 @@ function createWrapper() {
 describe("auth queries", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    locationMock.href = "";
   });
 
   describe("useMeQuery", () => {
@@ -68,7 +74,7 @@ describe("auth queries", () => {
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(mockPush).toHaveBeenCalledWith("/docs");
+      expect(locationMock.href).toBe("/docs");
     });
 
     it("실패 시 에러를 반환한다", async () => {
@@ -87,7 +93,7 @@ describe("auth queries", () => {
       });
 
       await waitFor(() => expect(result.current.isError).toBe(true));
-      expect(mockPush).not.toHaveBeenCalledWith("/docs");
+      expect(locationMock.href).not.toBe("/docs");
     });
   });
 
@@ -106,7 +112,7 @@ describe("auth queries", () => {
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(mockPush).toHaveBeenCalledWith("/login");
+      expect(locationMock.href).toBe("/login");
     });
   });
 
@@ -141,7 +147,7 @@ describe("auth queries", () => {
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(mockPush).toHaveBeenCalledWith("/docs");
+      expect(locationMock.href).toBe("/docs");
     });
   });
 });

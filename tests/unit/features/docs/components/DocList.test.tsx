@@ -9,36 +9,36 @@ const mockDeleteMutate = vi.fn();
 // vi.mock must use factory that captures from closures - use module-level state
 let _mockFilesData: unknown[] | undefined = [
   {
-    id: "1",
+    file_id: "1",
     filename: "프로젝트 기획서.pdf",
-    size: 2516582,
-    pages: 32,
+    content_type: "application/pdf",
+    size_bytes: 2516582,
+    index_status: "indexed",
     created_at: "2026-01-01",
-    status: "ready",
   },
   {
-    id: "2",
+    file_id: "2",
     filename: "API 설계 문서.pdf",
-    size: 1153433,
-    pages: 18,
+    content_type: "application/pdf",
+    size_bytes: 1153433,
+    index_status: "indexed",
     created_at: "2026-01-05",
-    status: "ready",
   },
   {
-    id: "3",
+    file_id: "3",
     filename: "회의록.pdf",
-    size: 524288,
-    pages: 8,
+    content_type: "application/pdf",
+    size_bytes: 524288,
+    index_status: "indexing",
     created_at: "2026-04-20",
-    status: "indexing",
   },
   {
-    id: "4",
+    file_id: "4",
     filename: "기술 스펙 v2.pdf",
-    size: 3881164,
-    pages: 56,
+    content_type: "application/pdf",
+    size_bytes: 3881164,
+    index_status: "indexing",
     created_at: "2026-04-20",
-    status: "indexing",
   },
 ];
 let _mockIsLoading = false;
@@ -78,36 +78,36 @@ describe("DocList", () => {
     vi.clearAllMocks();
     _mockFilesData = [
       {
-        id: "1",
+        file_id: "1",
         filename: "프로젝트 기획서.pdf",
-        size: 2516582,
-        pages: 32,
+        content_type: "application/pdf",
+        size_bytes: 2516582,
+        index_status: "indexed",
         created_at: "2026-01-01",
-        status: "ready",
       },
       {
-        id: "2",
+        file_id: "2",
         filename: "API 설계 문서.pdf",
-        size: 1153433,
-        pages: 18,
+        content_type: "application/pdf",
+        size_bytes: 1153433,
+        index_status: "indexed",
         created_at: "2026-01-05",
-        status: "ready",
       },
       {
-        id: "3",
+        file_id: "3",
         filename: "회의록.pdf",
-        size: 524288,
-        pages: 8,
+        content_type: "application/pdf",
+        size_bytes: 524288,
+        index_status: "indexing",
         created_at: "2026-04-20",
-        status: "indexing",
       },
       {
-        id: "4",
+        file_id: "4",
         filename: "기술 스펙 v2.pdf",
-        size: 3881164,
-        pages: 56,
+        content_type: "application/pdf",
+        size_bytes: 3881164,
+        index_status: "indexing",
         created_at: "2026-04-20",
-        status: "indexing",
       },
     ];
     _mockIsLoading = false;
@@ -130,7 +130,7 @@ describe("DocList", () => {
 
   it('indexing 상태 → "처리 중" 배지를 표시한다', () => {
     render(<DocList />, { wrapper: createWrapper() });
-    const badges = screen.getAllByText("처리 중");
+    const badges = screen.getAllByText(/처리 중/);
     expect(badges.length).toBeGreaterThan(0);
   });
 

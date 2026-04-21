@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 const mockRedirect = vi.fn();
+const mockApiServerGet = vi.fn();
 
 let _mockCookieValue: string | undefined = undefined;
 
@@ -24,6 +25,12 @@ vi.mock("next/headers", () => ({
   ),
 }));
 
+vi.mock("@/lib/api-server", () => ({
+  apiServer: {
+    get: (...args: unknown[]) => mockApiServerGet(...args),
+  },
+}));
+
 vi.mock("@/features/auth/components/LoginCard", () => ({
   LoginCard: () => <div data-testid="login-card">LoginCard</div>,
 }));
@@ -32,6 +39,7 @@ describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     _mockCookieValue = undefined;
+    mockApiServerGet.mockResolvedValue({ user_id: "1", username: "testuser" });
   });
 
   it("LoginCard가 렌더링된다", async () => {
