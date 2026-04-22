@@ -105,7 +105,7 @@ describe("useCreateSessionMutation", () => {
     vi.clearAllMocks();
   });
 
-  it("POST /chats 성공 시 sessions 쿼리를 무효화한다", async () => {
+  it("POST /chats 성공 시 sessions 캐시에 즉시 추가한다", async () => {
     const mockSession = {
       id: "s2",
       title: null,
@@ -115,7 +115,7 @@ describe("useCreateSessionMutation", () => {
     vi.mocked(createSession).mockResolvedValue(mockSession);
 
     const { Wrapper, queryClient } = createWrapper();
-    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
 
     const { result } = renderHook(() => useCreateSessionMutation(), { wrapper: Wrapper });
 
@@ -124,7 +124,7 @@ describe("useCreateSessionMutation", () => {
     });
 
     expect(createSession).toHaveBeenCalledOnce();
-    expect(invalidateSpy).toHaveBeenCalled();
+    expect(setQueryDataSpy).toHaveBeenCalled();
   });
 });
 

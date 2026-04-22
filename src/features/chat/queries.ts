@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatKeys } from "@/lib/query-keys/chat";
+import type { ChatSession } from "./types";
 import {
   createSession,
   deleteSession,
@@ -29,8 +30,11 @@ export function useCreateSessionMutation() {
 
   return useMutation({
     mutationFn: createSession,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: chatKeys.sessions() });
+    onSuccess: (newSession) => {
+      // 캐시에 즉시 추가 → 빈 상태 깜빡임 방지
+      queryClient.setQueryData<ChatSession[]>(chatKeys.sessions(), (prev) =>
+        prev ? [newSession, ...prev] : [newSession]
+      );
     },
   });
 }

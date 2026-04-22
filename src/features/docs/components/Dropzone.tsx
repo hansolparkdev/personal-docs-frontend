@@ -4,12 +4,23 @@ import { useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useUploadFileMutation } from "../queries";
 
-const SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".md", ".txt"];
-const SUPPORTED_MIME_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "text/markdown",
-  "text/plain",
+const SUPPORTED_EXTENSIONS = [
+  // 문서
+  ".pdf", ".docx", ".doc", ".rtf", ".odt",
+  // 프레젠테이션
+  ".pptx", ".ppt",
+  // 스프레드시트
+  ".xlsx", ".xls", ".csv",
+  // 텍스트
+  ".txt", ".md", ".markdown",
+  // 웹
+  ".html", ".htm",
+  // 이메일
+  ".eml", ".msg",
+  // 코드/데이터
+  ".json", ".xml", ".yaml", ".yml",
+  // 이미지
+  ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp",
 ];
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -17,7 +28,7 @@ function validateFile(file: File): string | null {
   const fileName = file.name.toLowerCase();
   const isValidExt = SUPPORTED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
   if (!isValidExt) {
-    return `지원하지 않는 파일 형식입니다. (지원: PDF, DOCX, MD, TXT)`;
+    return `지원하지 않는 파일 형식입니다.`;
   }
   if (file.size > MAX_FILE_SIZE) {
     return `파일 크기가 50MB를 초과합니다.`;
@@ -107,7 +118,7 @@ export function Dropzone() {
               파일을 드래그하거나 클릭해 업로드하세요
             </p>
             <p className="text-xs text-[var(--fg-3)]">
-              PDF, DOCX, MD, TXT 지원 · 최대 50MB
+              PDF, DOCX, PPTX, XLSX, MD, TXT, HTML, JSON 등 · 최대 50MB
             </p>
           </>
         )}

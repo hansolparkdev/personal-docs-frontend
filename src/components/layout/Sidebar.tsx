@@ -25,7 +25,7 @@ export function Sidebar() {
 
   async function handleNewChat() {
     const session = await createSessionMutation.mutateAsync();
-    window.location.href = `/chat?session=${session.id}`;
+    router.push(`/chat?session=${session.id}`);
   }
 
   return (

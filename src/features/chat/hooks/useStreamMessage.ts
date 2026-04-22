@@ -71,9 +71,10 @@ export function useStreamMessage(sessionId: string | null) {
           } else if (eventType === "done") {
             setStreaming(false);
             if (sessionId) {
-              await queryClient.invalidateQueries({
-                queryKey: chatKeys.session(sessionId),
-              });
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: chatKeys.session(sessionId) }),
+                queryClient.invalidateQueries({ queryKey: chatKeys.sessions() }),
+              ]);
             }
             reset();
           } else if (eventType === "error") {
