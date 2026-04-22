@@ -40,9 +40,10 @@ async function request<T>(
     });
 
     if (!refreshRes.ok) {
-      // refresh 실패 → 이미 로그인 페이지면 redirect 안 함
       if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
+        const { toast } = await import("sonner");
+        toast.error("세션이 만료됐어요. 다시 로그인해 주세요.");
+        setTimeout(() => { window.location.href = "/login"; }, 1500);
       }
       throw new Error("[api] refresh failed");
     }

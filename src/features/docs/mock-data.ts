@@ -7,7 +7,7 @@ export const MOCK_DOCS: Doc[] = [
     size: "2.4 MB",
     pages: 32,
     ago: "2일 전",
-    status: "ready",
+    status: "indexed",
   },
   {
     id: "2",
@@ -15,7 +15,7 @@ export const MOCK_DOCS: Doc[] = [
     size: "1.1 MB",
     pages: 18,
     ago: "5일 전",
-    status: "ready",
+    status: "indexed",
   },
   {
     id: "3",

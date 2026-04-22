@@ -45,9 +45,12 @@ export default function ChatPage() {
   }, []);
 
   // 새 메시지/스트리밍 토큰 시 자동 스크롤 (사용자가 위로 올리지 않은 경우만)
-  const serverMessages = session?.messages ?? [];
+  const serverMessages = [...(session?.messages ?? [])].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+  // pendingMessage: 아직 서버에 저장되지 않은 내 메시지 (id가 pending- 으로 시작)
   const messages =
-    pendingMessage && !serverMessages.some((m) => m.content === pendingMessage.content && m.role === "user")
+    pendingMessage && !serverMessages.some((m) => m.id === pendingMessage.id)
       ? [...serverMessages, pendingMessage]
       : serverMessages;
 

@@ -57,12 +57,7 @@ describe("auth queries", () => {
   describe("useLoginMutation", () => {
     it("성공 시 /docs로 이동한다", async () => {
       const { login } = await import("@/features/auth/api");
-      vi.mocked(login).mockResolvedValue({
-        access_token: "tok",
-        refresh_token: "ref",
-        token_type: "bearer",
-        expires_in: 3600,
-      });
+      vi.mocked(login).mockResolvedValue(undefined);
 
       const { useLoginMutation } = await import("@/features/auth/queries");
       const { result } = renderHook(() => useLoginMutation(), {
@@ -125,12 +120,7 @@ describe("auth queries", () => {
         email: "a@b.com",
         name: "홍길동",
       });
-      vi.mocked(login).mockResolvedValue({
-        access_token: "tok",
-        refresh_token: "ref",
-        token_type: "bearer",
-        expires_in: 3600,
-      });
+      vi.mocked(login).mockResolvedValue(undefined);
 
       const { useRegisterMutation } = await import("@/features/auth/queries");
       const { result } = renderHook(() => useRegisterMutation(), {

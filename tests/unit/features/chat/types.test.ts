@@ -45,9 +45,9 @@ describe("chat types", () => {
     const source: Source = {
       file_id: "f1",
       filename: "document.pdf",
-      page: 3,
+      page_number: 3,
     };
-    expect(source.page).toBe(3);
+    expect(source.page_number).toBe(3);
   });
 
   it("ChatSessionDetail은 messages 배열을 포함한다", () => {
@@ -70,7 +70,7 @@ describe("chat types", () => {
     const tokenEvent: SSEEvent = { type: "token", content: "안녕" };
     const sourcesEvent: SSEEvent = {
       type: "sources",
-      content: [{ file_id: "f1", filename: "doc.pdf", page: 1 }],
+      content: [{ file_id: "f1", filename: "doc.pdf", page_number: 1 }],
     };
     expect(tokenEvent.content).toBe("안녕");
     expect(Array.isArray(sourcesEvent.content)).toBe(true);

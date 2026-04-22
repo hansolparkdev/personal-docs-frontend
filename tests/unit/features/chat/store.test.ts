@@ -24,7 +24,7 @@ describe("useChatStore", () => {
 
   it("setSources는 sources를 설정한다", () => {
     const sources: Source[] = [
-      { file_id: "f1", filename: "document.pdf", page: 1 },
+      { file_id: "f1", filename: "document.pdf", page_number: 1 },
     ];
     const { setSources } = useChatStore.getState();
     setSources(sources);
@@ -42,7 +42,7 @@ describe("useChatStore", () => {
   it("reset은 모든 상태를 초기값으로 되돌린다", () => {
     const { appendToken, setSources, setStreaming, reset } = useChatStore.getState();
     appendToken("텍스트");
-    setSources([{ file_id: "f1", filename: "doc.pdf", page: 1 }]);
+    setSources([{ file_id: "f1", filename: "doc.pdf", page_number: 1 }]);
     setStreaming(true);
 
     reset();

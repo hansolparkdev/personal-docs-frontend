@@ -30,7 +30,7 @@ describe("docs queries", () => {
     it("파일 목록을 반환한다", async () => {
       const { listFiles } = await import("@/features/docs/api");
       const mockFiles = [
-        { id: "1", filename: "test.pdf", size: 1024, created_at: "2026-01-01", status: "ready" as const },
+        { file_id: "1", filename: "test.pdf", content_type: "application/pdf", size_bytes: 1024, created_at: "2026-01-01", index_status: "indexed" as const },
       ];
       vi.mocked(listFiles).mockResolvedValue(mockFiles);
 
@@ -48,11 +48,13 @@ describe("docs queries", () => {
     it("파일 상세 정보를 반환한다", async () => {
       const { getFile } = await import("@/features/docs/api");
       vi.mocked(getFile).mockResolvedValue({
-        id: "1",
+        file_id: "1",
         filename: "test.pdf",
-        size: 1024,
+        content_type: "application/pdf",
+        size_bytes: 1024,
+        index_status: "indexed" as const,
         created_at: "2026-01-01",
-        status: "ready" as const,
+        minio_path: "bucket/test.pdf",
       });
 
       const { useFileQuery } = await import("@/features/docs/queries");
@@ -62,8 +64,8 @@ describe("docs queries", () => {
       );
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      const data = result.current.data as { id: string } | undefined;
-      expect(data?.id).toBe("1");
+      const data = result.current.data as { file_id: string } | undefined;
+      expect(data?.file_id).toBe("1");
     });
 
     it("enabled: false이면 쿼리를 실행하지 않는다", async () => {
@@ -84,10 +86,10 @@ describe("docs queries", () => {
     it("성공 시 files 쿼리를 무효화한다", async () => {
       const { uploadFile } = await import("@/features/docs/api");
       vi.mocked(uploadFile).mockResolvedValue({
-        id: "new1",
+        file_id: "new1",
         filename: "new.pdf",
-        size: 2048,
-        status: "pending",
+        index_status: "pending",
+        created_at: "2026-01-01",
       });
 
       const queryClient = new QueryClient({

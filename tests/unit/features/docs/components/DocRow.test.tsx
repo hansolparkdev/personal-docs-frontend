@@ -69,7 +69,7 @@ describe("DocRow", () => {
 
   it("다운로드 버튼 클릭 시 getDownloadUrl을 호출한다", async () => {
     const { getDownloadUrl } = await import("@/features/docs/api");
-    vi.mocked(getDownloadUrl).mockResolvedValue({ download_url: "https://presigned.url/file.pdf" });
+    vi.mocked(getDownloadUrl).mockResolvedValue({ download_url: "https://presigned.url/file.pdf", expires_in: 3600 });
 
     const user = userEvent.setup();
     render(<DocRow doc={baseDoc} onDelete={vi.fn()} />, { wrapper: createWrapper() });
